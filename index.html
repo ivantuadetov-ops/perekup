@@ -4,251 +4,231 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Перекуп | Гаражный Синдикат</title>
-  <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --bg: #090b0e; --card: #14181f; --card2: #1c222b; --border: #262e3b; --green: #22c55e; --gold: #f59e0b; --red: #ef4444; --text: #f3f4f6; --muted: #9ca3af; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 94px; overflow-x: hidden; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(14,17,22,0.94); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
+    .pill { background: var(--card); border: 1px solid var(--border); padding: 6px 11px; border-radius: 18px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .pill-luck { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.45); color: var(--green); }
+    .bal-box { text-align: right; cursor: pointer; }
+    .bal-rub { font-size: 17px; font-weight: 900; color: #fff; }
+    .bal-sub { font-size: 12px; color: var(--gold); font-weight: 800; }
+    .wrap { padding: 10px 14px; }
+    .page { display: none; } .page.active { display: block; }
+    .card { background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.16), var(--card) 72%); border: 1px solid var(--border); border-radius: 20px; padding: 16px 14px; text-align: center; margin-bottom: 12px; }
+    .plate { background: #f8fafc; color: #0f172a; border: 3px solid #111; border-radius: 10px; display: inline-flex; align-items: center; margin: 10px 0; overflow: hidden; }
+    .p-code { padding: 6px 14px; font-size: 26px; font-weight: 900; font-family: monospace; }
+    .p-reg { border-left: 2px solid #111; padding: 4px 10px; background: #e2e8f0; font-weight: 900; font-size: 14px; }
+    .row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+    .btn { background: var(--card2); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; flex: 1; text-align: center; cursor: pointer; }
+    .btn:active { transform: scale(0.96); }
+    .spin { width: 100%; background: linear-gradient(180deg, #22c55e, #16a34a); color: #042f14; border: none; padding: 15px; border-radius: 16px; font-size: 17px; font-weight: 900; margin-top: 10px; cursor: pointer; box-shadow: 0 6px 20px rgba(34,197,94,0.3); }
+    .nav { position: fixed; bottom: 10px; left: 12px; right: 12px; background: rgba(20,24,31,0.96); border: 1px solid var(--border); border-radius: 22px; display: flex; padding: 6px; z-index: 90; }
+    .n-it { flex: 1; text-align: center; font-size: 11px; font-weight: 800; color: var(--muted); padding: 6px 0; border-radius: 14px; cursor: pointer; }
+    .n-it.active { color: var(--green); background: rgba(34,197,94,0.12); }
+    .item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    #toast { position: fixed; top: 68px; left: 50%; transform: translateX(-50%); background: #1f2937; border: 1px solid var(--gold); color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 13px; font-weight: 800; z-index: 250; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+  </style>
 </head>
 <body>
 
-  <div id="toast" class="toast"></div>
+<div id="toast"></div>
 
-  <!-- Верхняя панель -->
-  <header class="topbar">
-    <div class="top-left">
-      <div class="pill" onclick="openProfileModal()">
-        <span>Ур. <b id="ui-lvl">1</b></span>
-        <span id="cloud-dot" class="dot-sync" title="Статус базы">●</span>
+<header class="topbar">
+  <div>
+    <span class="pill" id="u-lvl">Ур. 1</span>
+    <span class="pill pill-luck" onclick="addLuck()">🍀 ×<span id="u-luck">2</span></span>
+  </div>
+  <div class="bal-box" onclick="addStars()">
+    <div style="font-size:16px;font-weight:900"><span id="u-rub">150 000</span> ₽</div>
+    <div class="bal-sub">⭐ <span id="u-stars">50</span> • 🎫 <span id="u-tix">40</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="p-play" class="page active">
+    <div style="background:linear-gradient(90deg,#3b2314,#181412);border:1px solid #78451e;border-radius:14px;padding:10px 14px;margin-bottom:10px;cursor:pointer" onclick="freeBoost()">
+      <b>🍀 Бонус: Удача ×10 + 25 🎫</b>
+      <div style="font-size:12px;color:#fbbf24">Нажми, чтобы забрать бесплатно</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-weight:900;margin-bottom:6px">
+        <span id="c-rar" style="color:#22c55e">Необычный</span>
+        <span id="c-prc" style="color:#22c55e;font-size:19px">240 000 ₽</span>
       </div>
-      <div class="pill pill-luck" onclick="openShopModal()">🍀 ×<b id="ui-luck">2</b></div>
+      <div id="c-ico" style="font-size:54px">🚙</div>
+      <div id="c-nam" style="font-size:19px;font-weight:900">Toyota Mark II</div>
+      <div class="plate">
+        <div class="p-code" id="c-vin">А 777 МР</div>
+        <div class="p-reg" id="c-reg">777 🇷🇺</div>
+      </div>
+      <div class="row">
+        <button class="btn" style="color:#fbbf24" onclick="glove()">🧤 Бардачок</button>
+        <button class="btn" style="color:#60a5fa" onclick="freeze()">❄️ Заморозка (10⭐)</button>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="toGar()">📥 В гараж</button>
+        <button class="btn" onclick="sellNow()">💸 Продать</button>
+      </div>
     </div>
-    <div class="bal-box" onclick="openShopModal()">
-      <div class="bal-label">Баланс <span id="ui-username"></span></div>
-      <div class="bal-rub"><span id="ui-rub">150 000</span> ₽</div>
-      <div class="bal-sub">⭐ <span id="ui-stars">50</span> • 🎫 <span id="ui-tix">40</span></div>
-    </div>
-  </header>
 
-  <!-- Верхний переключатель и кнопка Магазина -->
-  <div class="mode-bar">
-    <div class="mode-tabs">
-      <div class="mode-tab active" onclick="navTo('play')">Контейнеры</div>
-      <div class="mode-tab" onclick="openAutoparkModal()">Автопарк</div>
+    <div class="row">
+      <button class="btn" id="b-cnt" onclick="nextCountry()">🇷🇺 Россия (×1)</button>
+      <button class="btn" id="b-bet" onclick="nextBet()">Ставка ×1</button>
     </div>
-    <button class="shop-top-btn" onclick="openShopModal()">⭐ Магазин</button>
+    <button class="spin" onclick="spin()">Вскрыть контейнер (🎫 <span id="u-cost">1</span>)</button>
   </div>
 
-  <main class="wrap">
-
-    <!-- ВКЛАДКА 1: ИГРАТЬ -->
-    <section id="page-play" class="tab-page active">
-      <div class="promo-banner" onclick="claimFreeBonus()">
-        <div>
-          <div class="promo-title">🍀 Удача ×10 БЕСПЛАТНО</div>
-          <div class="promo-sub">🎁 Стартовый подгон • Удача +10 и 25 🎫</div>
-        </div>
-        <div class="arrow">➔</div>
-      </div>
-
-      <div class="promo-banner purple" onclick="openShopModal()">
-        <div>
-          <div class="promo-title">💥 Легендарный набор <s class="old-p">150</s> <span class="new-p">45 ⭐</span></div>
-          <div class="promo-sub">📦 +100 отмычек 🎫 и +5 к Удаче навсегда</div>
-        </div>
-        <div class="arrow">➔</div>
-      </div>
-
-      <!-- Полоска редкости и цены -->
-      <div class="rarity-bar">
-        <div>
-          <div id="ui-rarity" class="rar-title">Необычный</div>
-          <div id="ui-segs" class="segments"></div>
-        </div>
-        <div id="ui-price" class="price-big">240 000 ₽</div>
-      </div>
-
-      <!-- Главная карточка тачки -->
-      <div class="stage-card">
-        <div id="ui-emoji" class="car-icon">🚙</div>
-        <div id="ui-car-name" class="car-title">Toyota Mark II</div>
-        <div id="ui-car-cond" class="car-sub">Состояние: Гаражная находка</div>
-
-        <div class="plate-wrap">
-          <div id="ui-vin" class="plate-main">О 256 НК</div>
-          <div class="plate-reg">
-            <div id="ui-reg" class="plate-reg-num">777</div>
-            <div id="ui-flag" class="plate-reg-flag">🇷🇺 RUS</div>
-          </div>
-        </div>
-
-        <div id="ui-reasons" class="mult-list"></div>
-
-        <div class="stage-btns">
-          <button id="btn-glove" class="s-btn gold" onclick="searchGlovebox()">🧤 Бардачок</button>
-          <button id="btn-freeze" class="s-btn blue" onclick="toggleFreeze()">❄️ Заморозить VIN (10 ⭐)</button>
-        </div>
-
-        <div class="stage-btns mt-8">
-          <button class="s-btn" onclick="saveToGarage()">📥 В гараж</button>
-          <button class="s-btn" onclick="sellCurrent()">💸 Продать за <span id="ui-sell-val">240 000 ₽</span></button>
-        </div>
-      </div>
-
-      <!-- Кастомные кнопки выбора страны и ставки -->
-      <div class="custom-controls">
-        <div class="c-select" onclick="openCountrySheet()">
-          <span id="ui-country-btn">🇷🇺 Россия • ×1</span>
-          <span>▾</span>
-        </div>
-        <div class="c-select bet-sel" onclick="openBetSheet()">
-          <span id="ui-bet-btn">Ставка ×1</span>
-          <span>▾</span>
-        </div>
-        <div id="btn-fast5" class="fast-multi" onclick="toggleFast5()">5×</div>
-      </div>
-
-      <button class="main-spin-btn" onclick="spinContainer()">
-        <span id="ui-spin-txt">Вскрыть контейнер</span>
-        <span class="cost-pill">🎫 <span id="ui-spin-cost">1</span></span>
-      </button>
-    </section>
-
-    <!-- ВКЛАДКА 2: ГАРАЖ -->
-    <section id="page-garage" class="tab-page">
-      <div class="sec-head">
-        <h2>Гараж (<span id="g-count">0</span>)</h2>
-        <div id="g-sum" class="green-sum">0 ₽</div>
-      </div>
-
-      <div class="filter-chips">
-        <div class="f-chip active" onclick="setGarageFilter('ALL', this)">Все</div>
-        <div class="f-chip" onclick="setGarageFilter('RU', this)">🇷🇺 Россия</div>
-        <div class="f-chip" onclick="setGarageFilter('AE', this)">🇦🇪 ОАЭ</div>
-        <div class="f-chip" onclick="setGarageFilter('JP', this)">🇯🇵 Япония</div>
-        <div class="f-chip" onclick="setGarageFilter('US', this)">🇺🇸 США</div>
-        <div class="f-chip" onclick="sortGarage()">Цена ↓↑</div>
-      </div>
-
-      <div id="garage-list"></div>
-
-      <button class="s-btn full-w mt-10" onclick="craftFiveToOne()">🧪 Обменник 5 ➔ 1 (Скрафтить эксклюзив)</button>
-      <button class="s-btn full-w mt-8 red-txt" onclick="sellAllGarage()">💸 Продать все машины перекупам</button>
-    </section>
-
-    <!-- ВКЛАДКА 3: РЫНОК (ОНЛАЙН SUPABASE) -->
-    <section id="page-market" class="tab-page">
-      <div class="sec-head">
-        <h2>Онлайн Рынок</h2>
-        <button class="act-btn" onclick="loadMarket()">🔄 Обновить</button>
-      </div>
-
-      <div class="filter-chips">
-        <div class="f-chip active" onclick="filterMarket('ALL', this)">🔥 Все лоты</div>
-        <div class="f-chip" onclick="filterMarket('STARS', this)">⭐ За звёзды</div>
-        <div class="f-chip" onclick="filterMarket('MY', this)">📦 Мои лоты</div>
-      </div>
-
-      <div id="market-list"></div>
-    </section>
-
-    <!-- ВКЛАДКА 4: ДРУЗЬЯ -->
-    <section id="page-friends" class="tab-page">
-      <div class="stage-card">
-        <div class="big-ico">👥</div>
-        <div class="car-title">Зови друзей в Синдикат</div>
-        <div class="car-sub">Друг получит <b>+25 бесплатных отмычек</b>, а ты — награды за его уровень и 5% с его находок!</div>
-        <button class="main-spin-btn mt-10" onclick="inviteFriend()">Пригласить друга (+25 🎫)</button>
-      </div>
-
-      <div class="item-row"><span>🎫 Пригласить 1 друга</span><b class="green-sum">+25 отмычек</b></div>
-      <div class="item-row"><span>💸 Друг выбил редкую тачку</span><b class="green-sum">5% её цены</b></div>
-      <div class="item-row"><span>⭐ Друг купил набор за звёзды</span><b class="gold-sum">5% на баланс ⭐</b></div>
-      <div class="item-row"><span>👑 10 друзей в игре</span><b class="gold-sum">VIP-статус навсегда</b></div>
-    </section>
-
-    <!-- ВКЛАДКА 5: ЕЩЁ -->
-    <section id="page-more" class="tab-page">
-      <div class="grid-4">
-        <div class="tile" onclick="navTo('garage')"><div class="tile-ico bg-green">🏠</div><div class="tile-lbl">Гараж</div></div>
-        <div class="tile" onclick="openAutoparkModal()"><div class="tile-ico bg-blue">🚗</div><div class="tile-lbl">Автопарк</div></div>
-        <div class="tile" onclick="navTo('market')"><div class="tile-ico bg-pink">🏪</div><div class="tile-lbl">Рынок</div></div>
-        <div class="tile" onclick="openLeaderboard()"><div class="tile-ico bg-gold">🏆</div><div class="tile-lbl">Рейтинг</div></div>
-        <div class="tile" onclick="openTasksModal()"><div class="tile-ico bg-green">📋</div><div class="tile-lbl">Задания</div></div>
-        <div class="tile" onclick="openWheelModal()"><div class="tile-ico bg-orange">🎡</div><div class="tile-lbl">Колесо</div></div>
-        <div class="tile" onclick="navTo('friends')"><div class="tile-ico bg-cyan">👤</div><div class="tile-lbl">Друзья</div></div>
-        <div class="tile" onclick="claimDailyGift()"><div class="tile-ico bg-red">🎁</div><div class="tile-lbl">Подарок</div></div>
-      </div>
-
-      <div class="gold-shop-card" onclick="openShopModal()">
-        <div class="sec-head">
-          <div>
-            <div class="shop-h">Магазин Синдиката</div>
-            <div class="shop-p">VIP, Удача, Контейнеры и Звёзды ⭐</div>
-          </div>
-          <button class="act-btn dark-btn">Открыть</button>
-        </div>
-      </div>
-
-      <div class="sub-header">ИГРАТЬ И СОРЕВНОВАТЬСЯ</div>
-      <div class="grid-2">
-        <div class="tile-card" onclick="openUpgraderModal()">
-          <div class="tc-ico">🚗</div>
-          <div class="tc-title">Апгрейдер</div>
-          <div class="tc-sub">Прокачка ×2 ... ×10 + страховка</div>
-        </div>
-        <div class="tile-card" onclick="openDuelModal()">
-          <div class="tc-ico">🎲</div>
-          <div class="tc-title">Дуэли</div>
-          <div class="tc-sub">Кубики и монетка на ставку</div>
-        </div>
-        <div class="tile-card" onclick="openRaceModal()">
-          <div class="tc-ico">🏁</div>
-          <div class="tc-title">Заезды</div>
-          <div class="tc-sub">🟢 Гонка на 402 метра</div>
-        </div>
-        <div class="tile-card" onclick="openDealerModal()">
-          <div class="tc-ico">🕵️‍♂️</div>
-          <div class="tc-title">Скупщик</div>
-          <div class="tc-sub">Выкуп тачек +40% к цене</div>
-        </div>
-      </div>
-
-      <div class="sub-header">КЛАНЫ И ПРОФИЛЬ</div>
-      <div class="grid-2">
-        <div class="tile-card" onclick="openClansModal()">
-          <div class="tc-ico">🛡️</div>
-          <div class="tc-title">Кланы</div>
-          <div class="tc-sub">Вступи и получи +2 к Удаче</div>
-        </div>
-        <div class="tile-card" onclick="openAchieveModal()">
-          <div class="tc-ico">🏅</div>
-          <div class="tc-title">Достижения</div>
-          <div class="tc-sub green-sum">Забери награды за спины</div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Нижняя панель навигации -->
-  <nav class="bottom-bar">
-    <div id="nav-play" class="b-nav active" onclick="navTo('play')"><span class="b-ico">▶️</span>Играть</div>
-    <div id="nav-garage" class="b-nav" onclick="navTo('garage')"><span class="b-ico">🏠</span>Гараж</div>
-    <div id="nav-market" class="b-nav" onclick="navTo('market')"><span class="b-ico">🏪</span>Рынок</div>
-    <div id="nav-friends" class="b-nav" onclick="navTo('friends')"><span class="b-ico">👥</span>Друзья</div>
-    <div id="nav-more" class="b-nav" onclick="navTo('more')"><span class="b-ico">•••</span>Ещё</div>
-  </nav>
-
-  <!-- Кастомная шторка (Bottom Sheet) -->
-  <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
-    <div class="sheet" onclick="event.stopPropagation()">
-      <div class="sheet-head">
-        <div id="sheet-title" class="sheet-title">Меню</div>
-        <button class="sheet-close" onclick="closeModal()">✕</button>
-      </div>
-      <div id="sheet-body"></div>
-    </div>
+  <div id="p-gar" class="page">
+    <h3 style="margin-bottom:10px">Мой Гараж (<span id="g-cnt">0</span>)</h3>
+    <div id="g-list"></div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="craft()">🧪 Обменник 5 ➔ 1 (Эксклюзив)</button>
+    <button class="btn" style="width:100%;margin-top:6px;color:#f87171" onclick="S.gar=[];ui();msg('Гараж очищен')">💸 Слить всё</button>
   </div>
 
-  <script src="app.js"></script>
+  <div id="p-mkt" class="page">
+    <h3 style="margin-bottom:10px">Рынок и Аукцион</h3>
+    <div id="m-list"></div>
+  </div>
+
+  <div id="p-more" class="page">
+    <h3 style="margin-bottom:10px">Мини-игры и Магазин</h3>
+    <div class="item" onclick="upgr()"><span>⚡ Апгрейдер тачки ×2 (Шанс 55%)</span><b style="color:#22c55e">Рискнуть</b></div>
+    <div class="item" onclick="duel()"><span>🎲 Дуэль в кубики (Ставка 100k ₽)</span><b style="color:#fbbf24">Бросить</b></div>
+    <div class="item" onclick="dealer()"><span>🕵️‍♂️ Сдать тачку Скупщику (+40%)</span><b style="color:#22c55e">Сдать</b></div>
+  </div>
+</main>
+
+<nav class="nav">
+  <div class="n-it active" onclick="tab('play',this)">▶️ Играть</div>
+  <div class="n-it" onclick="tab('gar',this)">🏠 Гараж</div>
+  <div class="n-it" onclick="tab('mkt',this)">🏪 Рынок</div>
+  <div class="n-it" onclick="tab('more',this)">••• Ещё</div>
+</nav>
+
+<script>
+  const SUPA_URL = "https://offhwpihpkhqxonztdri.supabase.co";
+  const SUPA_KEY = "sb_publishable_AGoKBdL0VAvTWCNRrLEWIg_Ax5xGBTx";
+  const sb = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+
+  const USER_ID = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : 777;
+
+  let S = { rub: 150000, stars: 50, tix: 40, lvl: 1, luck: 2, cIdx: 0, bet: 1, frz: false, glv: false, gar: [], mkt: [
+    {n:"G63 AMG",i:"🚓",v:"А 777 МР",p:25000000},
+    {n:"Bugatti Chiron",i:"🚀",v:"DXB 1",p:85000000}
+  ]};
+
+  const CN = [{n:"🇷🇺 Россия (×1)",r:"777 🇷🇺",m:1},{n:"🇦🇪 Дубай (×3)",r:"DXB 🇦🇪",m:3},{n:"🇯🇵 Токио (×2)",r:"TKY 🇯🇵",m:2}];
+  const CR = [{n:"ВАЗ-2107",i:"🚗",b:60000},{n:"Mark II",i:"🚙",b:250000},{n:"BMW M5",i:"🏎️",b:900000},{n:"G63 AMG",i:"🚓",b:4500000},{n:"Bugatti",i:"🚀",b:25000000}];
+  const LT = ["А","В","Е","К","М","О","Р","Х"];
+  let cur = null;
+
+  const fmt = n => Math.round(n).toLocaleString('ru-RU');
+  function msg(t) { const e = document.getElementById('toast'); e.innerText = t; e.style.display = 'block'; setTimeout(()=>e.style.display='none', 1800); }
+
+  function ui() {
+    document.getElementById('u-rub').innerText = fmt(S.rub);
+    document.getElementById('u-stars').innerText = S.stars;
+    document.getElementById('u-tix').innerText = S.tix;
+    document.getElementById('u-luck').innerText = S.luck;
+    document.getElementById('u-cost').innerText = S.bet;
+    document.getElementById('b-cnt').innerText = CN[S.cIdx].n;
+    document.getElementById('b-bet').innerText = "Ставка ×" + S.bet;
+  }
+
+  function spin() {
+    if (S.tix < S.bet) return msg("Не хватает 🎫 отмычек!");
+    if (S.frz && S.stars >= 10) S.stars -= 10; else S.frz = false;
+    S.tix -= S.bet; S.glv = false;
+    const c = CR[Math.floor(Math.random()*CR.length)];
+    const cn = CN[S.cIdx];
+    const d = Math.random() < 0.25 ? ["777","001","888"][Math.floor(Math.random()*3)] : String(100+Math.floor(Math.random()*899));
+    const vin = (S.frz && cur) ? cur.v : `${LT[Math.floor(Math.random()*8)]} ${d} АМ`;
+    const m = (["777","001","888"].includes(d)?5:1)*cn.m*S.bet;
+    const p = c.b * m;
+    cur = {n:c.n, i:c.i, v:vin, r:cn.r, p:p};
+    document.getElementById('c-ico').innerText = cur.i;
+    document.getElementById('c-nam').innerText = cur.n;
+    document.getElementById('c-vin').innerText = cur.v;
+    document.getElementById('c-reg').innerText = cur.r;
+    document.getElementById('c-prc').innerText = fmt(cur.p) + " ₽";
+    document.getElementById('c-rar').innerText = p > 5000000 ? "Легендарный" : p > 500000 ? "Эпический" : "Необычный";
+    ui();
+  }
+
+  function glove() { if(S.glv)return msg("Уже проверено!"); S.glv=true; S.rub+=100000; msg("🧤 Найдено +100 000 ₽!"); ui(); }
+  function freeze() { S.frz=!S.frz; msg(S.frz?"❄️ VIN заморожен":"Заморозка снята"); }
+  function toGar() { S.gar.unshift({...cur}); msg("📥 Тачка в Гараже!"); spin(); }
+  function sellNow() { S.rub += cur.p; msg("💸 +" + fmt(cur.p) + " ₽"); spin(); }
+  function nextCountry() { S.cIdx = (S.cIdx + 1) % CN.length; ui(); msg(CN[S.cIdx].n); }
+  function nextBet() { S.bet = S.bet === 1 ? 5 : S.bet === 5 ? 10 : 1; ui(); }
+  function freeBoost() { S.luck += 10; S.tix += 25; msg("🍀 +10 Удачи и +25 🎫!"); ui(); }
+  function addLuck() { if(S.stars>=10){S.stars-=10;S.luck+=2;ui();msg("🍀 Удача +2")}}
+  function addStars() { S.stars += 200; ui(); msg("💎 +200 ⭐ начислено!"); }
+
+  function tab(id, el) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('p-'+id).classList.add('active');
+    document.querySelectorAll('.n-it').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+
+    if (id === 'gar') {
+      document.getElementById('g-cnt').innerText = S.gar.length;
+      document.getElementById('g-list').innerHTML = S.gar.map((x,k)=>`
+        <div class="item">
+          <span>${x.i} <b>${x.n}</b> (${x.v})<br><small style="color:#22c55e">${fmt(x.p)} ₽</small></span>
+          <button class="btn" style="flex:0;padding:6px 10px" onclick="S.rub+=S.gar.splice(${k},1)[0].p;tab('gar',document.querySelectorAll('.n-it')[1]);ui()">Продать</button>
+        </div>`).join('') || '<div style="color:#9ca3af;text-align:center;padding:15px">Гараж пуст</div>';
+    }
+    if (id === 'mkt') {
+      document.getElementById('m-list').innerHTML = S.mkt.map((x,k)=>`
+        <div class="item">
+          <span>${x.i} <b>${x.n}</b> [${x.v}]<br><small style="color:#fbbf24">${fmt(x.p)} ₽</small></span>
+          <button class="btn" style="flex:0;padding:6px 10px" onclick="if(S.rub>=${x.p}){S.rub-=${x.p};S.gar.push(S.mkt.splice(${k},1)[0]);msg('Куплено!');tab('mkt',document.querySelectorAll('.n-it')[2]);ui()}else msg('Мало ₽')">Купить</button>
+        </div>`).join('');
+    }
+  }
+
+  function craft() {
+    if(S.gar.length < 5) return msg("Нужно минимум 5 машин!");
+    const s = S.gar.splice(0,5).reduce((a,b)=>a+b.p,0);
+    S.gar.unshift({n:"Эксклюзив Brabus",i:"👑",v:"А 001 АА",p:s*2});
+    tab('gar', document.querySelectorAll('.n-it')[1]);
+    msg("🔥 Обмен 5➔1 успешен!");
+  }
+
+  function upgr() {
+    if(!S.gar.length) return msg("Гараж пуст!");
+    if(Math.random() < 0.55) { S.gar[0].p *= 2; msg("🚀 Успех ×2!"); }
+    else { S.gar.shift(); msg("💥 Двигатель стуканул, тачка сгорела..."); }
+    ui();
+  }
+
+  function duel() {
+    if(S.rub < 100000) return msg("Нужно 100 000 ₽!");
+    const win = Math.random() < 0.5;
+    S.rub += win ? 100000 : -100000;
+    ui();
+    msg(win ? "🎲 Победа в дуэли +100k ₽!" : "🎲 Поражение в дуэли -100k ₽");
+  }
+
+  function dealer() {
+    if(!S.gar.length) return msg("Гараж пуст!");
+    const c = S.gar.shift();
+    const pay = Math.round(c.p * 1.4);
+    S.rub += pay;
+    ui();
+    msg(`🕵️‍♂️ Скупщик забрал за ${fmt(pay)} ₽!`);
+  }
+
+  spin();
+</script>
 </body>
 </html>
