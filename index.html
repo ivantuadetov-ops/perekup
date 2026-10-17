@@ -7,228 +7,332 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root { --bg: #090b0e; --card: #14181f; --card2: #1c222b; --border: #262e3b; --green: #22c55e; --gold: #f59e0b; --red: #ef4444; --text: #f3f4f6; --muted: #9ca3af; }
+    :root {
+      --bg: #090b0e;
+      --card: #14181f;
+      --card2: #1c222b;
+      --border: #262e3b;
+      --green: #22c55e;
+      --gold: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 94px; overflow-x: hidden; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(14,17,22,0.94); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
+    body { background: var(--bg); color: var(--text); padding-bottom: 96px; overflow-x: hidden; }
+
+    /* Шапка */
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(14,17,22,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
     .pill { background: var(--card); border: 1px solid var(--border); padding: 6px 11px; border-radius: 18px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
     .pill-luck { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.45); color: var(--green); }
+    .sync-dot { color: var(--gold); font-size: 10px; }
+    .sync-dot.ok { color: var(--green); }
     .bal-box { text-align: right; cursor: pointer; }
     .bal-rub { font-size: 17px; font-weight: 900; color: #fff; }
     .bal-sub { font-size: 12px; color: var(--gold); font-weight: 800; }
+
     .wrap { padding: 10px 14px; }
-    .page { display: none; } .page.active { display: block; }
-    .card { background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.16), var(--card) 72%); border: 1px solid var(--border); border-radius: 20px; padding: 16px 14px; text-align: center; margin-bottom: 12px; }
-    .plate { background: #f8fafc; color: #0f172a; border: 3px solid #111; border-radius: 10px; display: inline-flex; align-items: center; margin: 10px 0; overflow: hidden; }
-    .p-code { padding: 6px 14px; font-size: 26px; font-weight: 900; font-family: monospace; }
-    .p-reg { border-left: 2px solid #111; padding: 4px 10px; background: #e2e8f0; font-weight: 900; font-size: 14px; }
+    .page { display: none; } .page.active { display: block; animation: fadeIn 0.18s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Баннеры */
+    .banner { background: linear-gradient(90deg, rgba(68,40,18,0.9), rgba(24,20,18,0.95)); border: 1px solid #78451e; border-radius: 15px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .banner-title { font-size: 14px; font-weight: 900; color: #fff; }
+    .banner-sub { font-size: 12px; color: #fbbf24; margin-top: 2px; font-weight: 600; }
+
+    /* Карточка дропа */
+    .rarity-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .segments { display: flex; gap: 4px; margin-top: 5px; }
+    .seg { width: 14px; height: 4px; border-radius: 2px; background: #2a3240; }
+    .price-big { font-size: 21px; font-weight: 900; color: var(--green); }
+
+    .card { background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.16), var(--card) 72%); border: 1px solid var(--border); border-radius: 20px; padding: 16px 14px; text-align: center; margin-bottom: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+    .car-icon { font-size: 60px; margin: 4px 0; display: inline-block; transition: transform 0.2s; }
+    .car-icon.pop { transform: scale(1.18); }
+    .car-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .car-sub { font-size: 12px; color: var(--muted); margin: 4px 0 12px; }
+
+    .plate { background: #f8fafc; color: #0f172a; border: 3px solid #111827; outline: 2px solid #94a3b8; border-radius: 11px; display: inline-flex; align-items: stretch; overflow: hidden; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.55); }
+    .p-code { padding: 8px 15px; font-size: 26px; font-weight: 900; letter-spacing: 2px; font-family: monospace; display: flex; align-items: center; }
+    .p-reg { border-left: 2.5px solid #111827; padding: 5px 10px; background: #f1f5f9; display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 64px; }
+    .p-reg-num { font-size: 17px; font-weight: 900; line-height: 1; }
+    .p-reg-flag { font-size: 10px; font-weight: 800; margin-top: 3px; }
+
+    .mult-list { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+    .mult-list b { color: var(--green); }
+
     .row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
-    .btn { background: var(--card2); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; flex: 1; text-align: center; cursor: pointer; }
+    .btn { background: var(--card2); border: 1px solid var(--border); color: #fff; padding: 10px 13px; border-radius: 13px; font-size: 13px; font-weight: 800; flex: 1; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn:active { transform: scale(0.96); }
-    .spin { width: 100%; background: linear-gradient(180deg, #22c55e, #16a34a); color: #042f14; border: none; padding: 15px; border-radius: 16px; font-size: 17px; font-weight: 900; margin-top: 10px; cursor: pointer; box-shadow: 0 6px 20px rgba(34,197,94,0.3); }
-    .nav { position: fixed; bottom: 10px; left: 12px; right: 12px; background: rgba(20,24,31,0.96); border: 1px solid var(--border); border-radius: 22px; display: flex; padding: 6px; z-index: 90; }
+
+    .controls-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .c-select { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 11px 12px; font-size: 13px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .fast-multi { background: var(--card); border: 1px solid var(--border); color: var(--green); font-weight: 900; font-size: 14px; padding: 0 14px; border-radius: 14px; display: flex; align-items: center; cursor: pointer; }
+    .fast-multi.on { background: rgba(34,197,94,0.2); border-color: var(--green); }
+
+    .spin { width: 100%; background: linear-gradient(180deg, #22c55e, #16a34a); color: #042f14; border: none; padding: 16px; border-radius: 16px; font-size: 17px; font-weight: 900; margin-top: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 6px 20px rgba(34,197,94,0.3); }
+    .spin:active { transform: scale(0.98); }
+
+    /* Навигация */
+    .nav { position: fixed; bottom: 10px; left: 12px; right: 12px; background: rgba(20,24,31,0.96); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 22px; display: flex; padding: 6px; z-index: 90; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
     .n-it { flex: 1; text-align: center; font-size: 11px; font-weight: 800; color: var(--muted); padding: 6px 0; border-radius: 14px; cursor: pointer; }
     .n-it.active { color: var(--green); background: rgba(34,197,94,0.12); }
-    .item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    #toast { position: fixed; top: 68px; left: 50%; transform: translateX(-50%); background: #1f2937; border: 1px solid var(--gold); color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 13px; font-weight: 800; z-index: 250; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+    .n-ico { font-size: 18px; display: block; margin-bottom: 2px; }
+
+    /* Списки и сетки */
+    .sec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px; }
+    .f-chip { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 7px 13px; border-radius: 16px; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+    .f-chip.active { background: #fff; color: #000; border-color: #fff; }
+
+    .item { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .mini-plate { background: #f8fafc; color: #0f172a; border: 2px solid #0f172a; border-radius: 6px; padding: 3px 7px; font-family: monospace; font-weight: 900; font-size: 12px; display: inline-block; margin-top: 3px; }
+    .act-btn { background: var(--green); color: #052e16; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 900; font-size: 12px; cursor: pointer; }
+    .dark-btn { background: var(--card2); color: #fff; border: 1px solid var(--border); }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+    .tile { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px 6px; text-align: center; cursor: pointer; }
+    .tile:active { transform: scale(0.96); }
+    .tile-ico { width: 40px; height: 40px; border-radius: 12px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .tile-lbl { font-size: 11px; font-weight: 800; }
+    .tile-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; cursor: pointer; }
+    .tile-card:active { transform: scale(0.98); }
+    .sub-header { font-size: 12px; font-weight: 900; color: var(--muted); margin: 12px 0 8px; }
+
+    .gold-shop-card { background: linear-gradient(135deg, #fcd34d, #f59e0b 60%, #ea580c); color: #111; border-radius: 18px; padding: 15px; margin-bottom: 14px; cursor: pointer; }
+
+    /* Шторки */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 150; display: none; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .sheet { background: #14181f; border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-width: 520px; padding: 18px 16px 30px; max-height: 85vh; overflow-y: auto; }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .sheet-title { font-size: 18px; font-weight: 900; }
+    .sheet-close { background: var(--card2); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; cursor: pointer; }
+    .opt-row { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; font-size: 14px; }
+    .opt-row.selected { border-color: var(--green); background: rgba(34,197,94,0.12); }
+
+    #toast { position: fixed; top: 68px; left: 50%; transform: translateX(-50%); background: #1f2937; border: 1px solid var(--gold); color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 13px; font-weight: 800; z-index: 250; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.7); white-space: nowrap; }
   </style>
 </head>
 <body>
 
 <div id="toast"></div>
 
+<!-- Шапка -->
 <header class="topbar">
   <div>
-    <span class="pill" id="u-lvl">Ур. 1</span>
-    <span class="pill pill-luck" onclick="addLuck()">🍀 ×<span id="u-luck">2</span></span>
+    <span class="pill" onclick="openProfileModal()">Ур. <span id="u-lvl">1</span> <span id="sync-icon" class="sync-dot">●</span></span>
+    <span class="pill pill-luck" onclick="openShopModal()">🍀 ×<span id="u-luck">2</span></span>
   </div>
-  <div class="bal-box" onclick="addStars()">
-    <div style="font-size:16px;font-weight:900"><span id="u-rub">150 000</span> ₽</div>
+  <div class="bal-box" onclick="openShopModal()">
+    <div class="bal-rub"><span id="u-rub">150 000</span> ₽</div>
     <div class="bal-sub">⭐ <span id="u-stars">50</span> • 🎫 <span id="u-tix">40</span></div>
   </div>
 </header>
 
 <main class="wrap">
+
+  <!-- ВКЛАДКА 1: ИГРАТЬ -->
   <div id="p-play" class="page active">
-    <div style="background:linear-gradient(90deg,#3b2314,#181412);border:1px solid #78451e;border-radius:14px;padding:10px 14px;margin-bottom:10px;cursor:pointer" onclick="freeBoost()">
-      <b>🍀 Бонус: Удача ×10 + 25 🎫</b>
-      <div style="font-size:12px;color:#fbbf24">Нажми, чтобы забрать бесплатно</div>
+    <div class="banner" onclick="claimFreeBonus()">
+      <div>
+        <div class="banner-title">🍀 Удача ×10 БЕСПЛАТНО</div>
+        <div class="banner-sub">🎁 Задание • Удача +10 и 25 отмычек</div>
+      </div>
+      <div style="font-weight:900">➔</div>
+    </div>
+
+    <div class="rarity-bar">
+      <div>
+        <div id="c-rar" style="font-size:13px; font-weight:900; color:var(--green)">Необычный</div>
+        <div class="segments" id="c-segs"></div>
+      </div>
+      <div id="c-prc" class="price-big">240 000 ₽</div>
     </div>
 
     <div class="card">
-      <div style="display:flex;justify-content:space-between;font-weight:900;margin-bottom:6px">
-        <span id="c-rar" style="color:#22c55e">Необычный</span>
-        <span id="c-prc" style="color:#22c55e;font-size:19px">240 000 ₽</span>
-      </div>
-      <div id="c-ico" style="font-size:54px">🚙</div>
-      <div id="c-nam" style="font-size:19px;font-weight:900">Toyota Mark II</div>
+      <div id="c-ico" class="car-icon">🚙</div>
+      <div id="c-nam" class="car-title">Toyota Mark II</div>
+      <div id="c-cond" class="car-sub">Состояние: Гаражная находка</div>
+
       <div class="plate">
         <div class="p-code" id="c-vin">А 777 МР</div>
-        <div class="p-reg" id="c-reg">777 🇷🇺</div>
+        <div class="p-reg">
+          <div id="c-reg" class="p-reg-num">777</div>
+          <div id="c-flag" class="p-reg-flag">🇷🇺 RUS</div>
+        </div>
       </div>
+
+      <div id="c-mults" class="mult-list">Регион и серия дают бонус к цене</div>
+
       <div class="row">
         <button class="btn" style="color:#fbbf24" onclick="glove()">🧤 Бардачок</button>
-        <button class="btn" style="color:#60a5fa" onclick="freeze()">❄️ Заморозка (10⭐)</button>
+        <button class="btn" id="b-frz" style="color:#60a5fa" onclick="freeze()">❄️ Заморозка (10 ⭐)</button>
       </div>
-      <div class="row">
+
+      <div class="row" style="margin-top:8px">
         <button class="btn" onclick="toGar()">📥 В гараж</button>
-        <button class="btn" onclick="sellNow()">💸 Продать</button>
+        <button class="btn" onclick="sellNow()">💸 Продать за <span id="u-sell-val">240 000 ₽</span></button>
       </div>
     </div>
 
-    <div class="row">
-      <button class="btn" id="b-cnt" onclick="nextCountry()">🇷🇺 Россия (×1)</button>
-      <button class="btn" id="b-bet" onclick="nextBet()">Ставка ×1</button>
+    <div class="controls-row">
+      <div class="c-select" onclick="openCountrySheet()">
+        <span id="b-cnt">🇷🇺 Россия • ×1</span>
+        <span>▾</span>
+      </div>
+      <div class="c-select" style="max-width:125px" onclick="openBetSheet()">
+        <span id="b-bet">Ставка ×1</span>
+        <span>▾</span>
+      </div>
+      <div id="b-fast5" class="fast-multi" onclick="toggleFast5()">5×</div>
     </div>
-    <button class="spin" onclick="spin()">Вскрыть контейнер (🎫 <span id="u-cost">1</span>)</button>
+
+    <button class="spin" onclick="spin()">
+      <span id="spin-txt">Вскрыть контейнер</span>
+      <span style="background:rgba(0,0,0,0.3); padding:3px 9px; border-radius:10px; font-size:13px">🎫 <span id="u-cost">1</span></span>
+    </button>
   </div>
 
+  <!-- ВКЛАДКА 2: ГАРАЖ -->
   <div id="p-gar" class="page">
-    <h3 style="margin-bottom:10px">Мой Гараж (<span id="g-cnt">0</span>)</h3>
+    <div class="sec-head">
+      <h3 style="font-size:20px; font-weight:900">Гараж (<span id="g-cnt">0</span>)</h3>
+      <div id="g-sum" style="color:var(--green); font-weight:900">0 ₽</div>
+    </div>
+
+    <div class="filter-chips">
+      <div class="f-chip active" onclick="setGarFilter('ALL', this)">Все</div>
+      <div class="f-chip" onclick="setGarFilter('RU', this)">🇷🇺 Россия</div>
+      <div class="f-chip" onclick="setGarFilter('AE', this)">🇦🇪 ОАЭ</div>
+      <div class="f-chip" onclick="setGarFilter('JP', this)">🇯🇵 Япония</div>
+      <div class="f-chip" onclick="setGarFilter('US', this)">🇺🇸 США</div>
+      <div class="f-chip" onclick="sortGar()">Цена ↓↑</div>
+    </div>
+
     <div id="g-list"></div>
-    <button class="btn" style="width:100%;margin-top:8px" onclick="craft()">🧪 Обменник 5 ➔ 1 (Эксклюзив)</button>
-    <button class="btn" style="width:100%;margin-top:6px;color:#f87171" onclick="S.gar=[];ui();msg('Гараж очищен')">💸 Слить всё</button>
+
+    <button class="btn" style="width:100%; justify-content:center; padding:13px; margin-top:10px" onclick="craft()">🧪 Обменник 5 ➔ 1 (Скрафтить эксклюзив)</button>
+    <button class="btn" style="width:100%; justify-content:center; padding:13px; margin-top:8px; color:#f87171" onclick="sellAllGar()">💸 Продать все машины перекупам</button>
   </div>
 
+  <!-- ВКЛАДКА 3: РЫНОК (ОНЛАЙН) -->
   <div id="p-mkt" class="page">
-    <h3 style="margin-bottom:10px">Рынок и Аукцион</h3>
+    <div class="sec-head">
+      <h3 style="font-size:20px; font-weight:900">Онлайн Рынок</h3>
+      <button class="act-btn" onclick="loadMarket()">🔄 Обновить</button>
+    </div>
+
+    <div class="filter-chips">
+      <div class="f-chip active" onclick="setMktFilter('ALL', this)">🔥 Все лоты</div>
+      <div class="f-chip" onclick="setMktFilter('MY', this)">📦 Мои лоты</div>
+    </div>
+
     <div id="m-list"></div>
   </div>
 
-  <div id="p-more" class="page">
-    <h3 style="margin-bottom:10px">Мини-игры и Магазин</h3>
-    <div class="item" onclick="upgr()"><span>⚡ Апгрейдер тачки ×2 (Шанс 55%)</span><b style="color:#22c55e">Рискнуть</b></div>
-    <div class="item" onclick="duel()"><span>🎲 Дуэль в кубики (Ставка 100k ₽)</span><b style="color:#fbbf24">Бросить</b></div>
-    <div class="item" onclick="dealer()"><span>🕵️‍♂️ Сдать тачку Скупщику (+40%)</span><b style="color:#22c55e">Сдать</b></div>
+  <!-- ВКЛАДКА 4: ДРУЗЬЯ -->
+  <div id="p-friend" class="page">
+    <div class="card" style="padding:20px 14px">
+      <div style="font-size:44px; margin-bottom:6px">👥</div>
+      <div class="car-title">Зови друзей в Синдикат</div>
+      <div class="car-sub" style="font-size:13px">Друг получит <b>+25 отмычек</b>, а ты — награды за его активность!</div>
+      <button class="spin" style="margin-top:12px" onclick="inviteFriend()">Пригласить друга (+25 🎫)</button>
+    </div>
+    <div class="item"><span>🎫 Друг сделал 30 бросков</span><b style="color:var(--green)">+50 отмычек</b></div>
+    <div class="item"><span>💸 Друг выбил редкую тачку</span><b style="color:var(--green)">5% её цены</b></div>
   </div>
+
+  <!-- ВКЛАДКА 5: ЕЩЁ -->
+  <div id="p-more" class="page">
+    <div class="grid-4">
+      <div class="tile" onclick="tab('gar', document.querySelectorAll('.n-it')[1])"><div class="tile-ico" style="background:#16a34a">🏠</div><div class="tile-lbl">Гараж</div></div>
+      <div class="tile" onclick="openAutopark()"><div class="tile-ico" style="background:#2563eb">🚗</div><div class="tile-lbl">Автопарк</div></div>
+      <div class="tile" onclick="tab('mkt', document.querySelectorAll('.n-it')[2])"><div class="tile-ico" style="background:#db2777">🏪</div><div class="tile-lbl">Рынок</div></div>
+      <div class="tile" onclick="openRating()"><div class="tile-ico" style="background:#d97706">🏆</div><div class="tile-lbl">Рейтинг</div></div>
+      <div class="tile" onclick="openTasks()"><div class="tile-ico" style="background:#16a34a">📋</div><div class="tile-lbl">Задания</div></div>
+      <div class="tile" onclick="openWheel()"><div class="tile-ico" style="background:#ea580c">🎡</div><div class="tile-lbl">Колесо</div></div>
+      <div class="tile" onclick="tab('friend', document.querySelectorAll('.n-it')[3])"><div class="tile-ico" style="background:#0284c7">👤</div><div class="tile-lbl">Друзья</div></div>
+      <div class="tile" onclick="claimGift()"><div class="tile-ico" style="background:#e11d48">🎁</div><div class="tile-lbl">Подарок</div></div>
+    </div>
+
+    <div class="gold-shop-card" onclick="openShopModal()">
+      <div class="sec-head">
+        <div>
+          <div style="font-size:18px; font-weight:900">Магазин Синдиката</div>
+          <div style="font-size:12px; font-weight:700; opacity:0.85">VIP, Удача, Наборы и Звёзды ⭐</div>
+        </div>
+        <button class="act-btn dark-btn">Открыть</button>
+      </div>
+    </div>
+
+    <div class="sub-header">ИГРАТЬ И СОРЕВНОВАТЬСЯ</div>
+    <div class="grid-2">
+      <div class="tile-card" onclick="openUpgrader()">
+        <div style="font-size:22px">🚗</div>
+        <div style="font-size:14px; font-weight:900">Апгрейдер</div>
+        <div style="font-size:11px; color:var(--muted)">Прокачка ×2 ... ×10 + страховка</div>
+      </div>
+      <div class="tile-card" onclick="openDuel()">
+        <div style="font-size:22px">🎲</div>
+        <div style="font-size:14px; font-weight:900">Дуэли</div>
+        <div style="font-size:11px; color:var(--muted)">Кубики на ставку 100k ₽</div>
+      </div>
+      <div class="tile-card" onclick="openRace()">
+        <div style="font-size:22px">🏁</div>
+        <div style="font-size:14px; font-weight:900">Заезды</div>
+        <div style="font-size:11px; color:var(--muted)">Гонка на кэш и отмычки</div>
+      </div>
+      <div class="tile-card" onclick="openDealerModal()">
+        <div style="font-size:22px">🕵️‍♂️</div>
+        <div style="font-size:14px; font-weight:900">Скупщик</div>
+        <div style="font-size:11px; color:var(--muted)">Выкуп тачек +40% к цене</div>
+      </div>
+    </div>
+
+    <div class="sub-header">КЛАНЫ И ПРОФИЛЬ</div>
+    <div class="grid-2">
+      <div class="tile-card" onclick="openClans()">
+        <div style="font-size:22px">🛡️</div>
+        <div style="font-size:14px; font-weight:900">Кланы</div>
+        <div style="font-size:11px; color:var(--muted)">Вступи и получи +2 к Удаче</div>
+      </div>
+      <div class="tile-card" onclick="openAchieve()">
+        <div style="font-size:22px">🏅</div>
+        <div style="font-size:14px; font-weight:900">Достижения</div>
+        <div style="font-size:11px; color:var(--green)">Забери награды за спины</div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
+<!-- Нижнее меню -->
 <nav class="nav">
-  <div class="n-it active" onclick="tab('play',this)">▶️ Играть</div>
-  <div class="n-it" onclick="tab('gar',this)">🏠 Гараж</div>
-  <div class="n-it" onclick="tab('mkt',this)">🏪 Рынок</div>
-  <div class="n-it" onclick="tab('more',this)">••• Ещё</div>
+  <div class="n-it active" onclick="tab('play', this)"><span class="n-ico">▶️</span>Играть</div>
+  <div class="n-it" onclick="tab('gar', this)"><span class="n-ico">🏠</span>Гараж</div>
+  <div class="n-it" onclick="tab('mkt', this)"><span class="n-ico">🏪</span>Рынок</div>
+  <div class="n-it" onclick="tab('friend', this)"><span class="n-ico">👥</span>Друзья</div>
+  <div class="n-it" onclick="tab('more', this)"><span class="n-ico">•••</span>Ещё</div>
 </nav>
+
+<!-- Кастомная шторка -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-head">
+      <div id="sheet-title" class="sheet-title">Меню</div>
+      <button class="sheet-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="sheet-body"></div>
+  </div>
+</div>
 
 <script>
   const SUPA_URL = "https://offhwpihpkhqxonztdri.supabase.co";
   const SUPA_KEY = "sb_publishable_AGoKBdL0VAvTWCNRrLEWIg_Ax5xGBTx";
   const sb = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
 
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
-
-  const USER_ID = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : 777;
-
-  let S = { rub: 150000, stars: 50, tix: 40, lvl: 1, luck: 2, cIdx: 0, bet: 1, frz: false, glv: false, gar: [], mkt: [
-    {n:"G63 AMG",i:"🚓",v:"А 777 МР",p:25000000},
-    {n:"Bugatti Chiron",i:"🚀",v:"DXB 1",p:85000000}
-  ]};
-
-  const CN = [{n:"🇷🇺 Россия (×1)",r:"777 🇷🇺",m:1},{n:"🇦🇪 Дубай (×3)",r:"DXB 🇦🇪",m:3},{n:"🇯🇵 Токио (×2)",r:"TKY 🇯🇵",m:2}];
-  const CR = [{n:"ВАЗ-2107",i:"🚗",b:60000},{n:"Mark II",i:"🚙",b:250000},{n:"BMW M5",i:"🏎️",b:900000},{n:"G63 AMG",i:"🚓",b:4500000},{n:"Bugatti",i:"🚀",b:25000000}];
-  const LT = ["А","В","Е","К","М","О","Р","Х"];
-  let cur = null;
-
-  const fmt = n => Math.round(n).toLocaleString('ru-RU');
-  function msg(t) { const e = document.getElementById('toast'); e.innerText = t; e.style.display = 'block'; setTimeout(()=>e.style.display='none', 1800); }
-
-  function ui() {
-    document.getElementById('u-rub').innerText = fmt(S.rub);
-    document.getElementById('u-stars').innerText = S.stars;
-    document.getElementById('u-tix').innerText = S.tix;
-    document.getElementById('u-luck').innerText = S.luck;
-    document.getElementById('u-cost').innerText = S.bet;
-    document.getElementById('b-cnt').innerText = CN[S.cIdx].n;
-    document.getElementById('b-bet').innerText = "Ставка ×" + S.bet;
-  }
-
-  function spin() {
-    if (S.tix < S.bet) return msg("Не хватает 🎫 отмычек!");
-    if (S.frz && S.stars >= 10) S.stars -= 10; else S.frz = false;
-    S.tix -= S.bet; S.glv = false;
-    const c = CR[Math.floor(Math.random()*CR.length)];
-    const cn = CN[S.cIdx];
-    const d = Math.random() < 0.25 ? ["777","001","888"][Math.floor(Math.random()*3)] : String(100+Math.floor(Math.random()*899));
-    const vin = (S.frz && cur) ? cur.v : `${LT[Math.floor(Math.random()*8)]} ${d} АМ`;
-    const m = (["777","001","888"].includes(d)?5:1)*cn.m*S.bet;
-    const p = c.b * m;
-    cur = {n:c.n, i:c.i, v:vin, r:cn.r, p:p};
-    document.getElementById('c-ico').innerText = cur.i;
-    document.getElementById('c-nam').innerText = cur.n;
-    document.getElementById('c-vin').innerText = cur.v;
-    document.getElementById('c-reg').innerText = cur.r;
-    document.getElementById('c-prc').innerText = fmt(cur.p) + " ₽";
-    document.getElementById('c-rar').innerText = p > 5000000 ? "Легендарный" : p > 500000 ? "Эпический" : "Необычный";
-    ui();
-  }
-
-  function glove() { if(S.glv)return msg("Уже проверено!"); S.glv=true; S.rub+=100000; msg("🧤 Найдено +100 000 ₽!"); ui(); }
-  function freeze() { S.frz=!S.frz; msg(S.frz?"❄️ VIN заморожен":"Заморозка снята"); }
-  function toGar() { S.gar.unshift({...cur}); msg("📥 Тачка в Гараже!"); spin(); }
-  function sellNow() { S.rub += cur.p; msg("💸 +" + fmt(cur.p) + " ₽"); spin(); }
-  function nextCountry() { S.cIdx = (S.cIdx + 1) % CN.length; ui(); msg(CN[S.cIdx].n); }
-  function nextBet() { S.bet = S.bet === 1 ? 5 : S.bet === 5 ? 10 : 1; ui(); }
-  function freeBoost() { S.luck += 10; S.tix += 25; msg("🍀 +10 Удачи и +25 🎫!"); ui(); }
-  function addLuck() { if(S.stars>=10){S.stars-=10;S.luck+=2;ui();msg("🍀 Удача +2")}}
-  function addStars() { S.stars += 200; ui(); msg("💎 +200 ⭐ начислено!"); }
-
-  function tab(id, el) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('p-'+id).classList.add('active');
-    document.querySelectorAll('.n-it').forEach(n=>n.classList.remove('active'));
-    el.classList.add('active');
-
-    if (id === 'gar') {
-      document.getElementById('g-cnt').innerText = S.gar.length;
-      document.getElementById('g-list').innerHTML = S.gar.map((x,k)=>`
-        <div class="item">
-          <span>${x.i} <b>${x.n}</b> (${x.v})<br><small style="color:#22c55e">${fmt(x.p)} ₽</small></span>
-          <button class="btn" style="flex:0;padding:6px 10px" onclick="S.rub+=S.gar.splice(${k},1)[0].p;tab('gar',document.querySelectorAll('.n-it')[1]);ui()">Продать</button>
-        </div>`).join('') || '<div style="color:#9ca3af;text-align:center;padding:15px">Гараж пуст</div>';
-    }
-    if (id === 'mkt') {
-      document.getElementById('m-list').innerHTML = S.mkt.map((x,k)=>`
-        <div class="item">
-          <span>${x.i} <b>${x.n}</b> [${x.v}]<br><small style="color:#fbbf24">${fmt(x.p)} ₽</small></span>
-          <button class="btn" style="flex:0;padding:6px 10px" onclick="if(S.rub>=${x.p}){S.rub-=${x.p};S.gar.push(S.mkt.splice(${k},1)[0]);msg('Куплено!');tab('mkt',document.querySelectorAll('.n-it')[2]);ui()}else msg('Мало ₽')">Купить</button>
-        </div>`).join('');
-    }
-  }
-
-  function craft() {
-    if(S.gar.length < 5) return msg("Нужно минимум 5 машин!");
-    const s = S.gar.splice(0,5).reduce((a,b)=>a+b.p,0);
-    S.gar.unshift({n:"Эксклюзив Brabus",i:"👑",v:"А 001 АА",p:s*2});
-    tab('gar', document.querySelectorAll('.n-it')[1]);
-    msg("🔥 Обмен 5➔1 успешен!");
-  }
-
-  function upgr() {
-    if(!S.gar.length) return msg("Гараж пуст!");
-    if(Math.random() < 0.55) { S.gar[0].p *= 2; msg("🚀 Успех ×2!"); }
-    else { S.gar.shift(); msg("💥 Двигатель стуканул, тачка сгорела..."); }
-    ui();
-  }
-
-  function duel() {
-    if(S.rub < 100000) return msg("Нужно 100 000 ₽!");
-    const win = Math.random() < 0.5;
-    S.rub += win ? 100000 : -100000;
-    ui();
-    msg(win ? "🎲 Победа в дуэли +100k ₽!" : "🎲 Поражение в дуэли -100k ₽");
-  }
-
-  function dealer() {
-    if(!S.gar.length) return msg("Гараж пуст!");
-    const c = S.gar.shift();
-    const pay = Math.round(c.p * 1.4);
-    S.rub += pay;
-    ui();
-    msg(`🕵️‍♂️ Скупщик забрал за ${fmt(pay)} ₽!`);
-  }
-
-  spin();
-</script>
-</body>
-</html>
+  const tg = window.Telegram && window.T 
