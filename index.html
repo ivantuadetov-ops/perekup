@@ -1,301 +1,175 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Перекуп | Гаражный Синдикат</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg: #090b0e;
-      --card: #14181f;
-      --card2: #1c222b;
-      --border: #262e3b;
-      --green: #22c55e;
-      --green-dark: #15803d;
-      --gold: #f59e0b;
-      --red: #ef4444;
-      --purple: #a855f7;
-      --blue: #3b82f6;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 96px; overflow-x: hidden; }
-
-    /* Шапка */
-    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(14,17,22,0.92); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); }
-    .top-left { display: flex; gap: 8px; align-items: center; }
-    .pill { background: var(--card); border: 1px solid var(--border); padding: 6px 11px; border-radius: 18px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-    .pill-luck { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--green); }
-    .bal-box { text-align: right; cursor: pointer; }
-    .bal-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .bal-rub { font-size: 17px; font-weight: 900; color: #fff; line-height: 1.1; }
-    .bal-sub { font-size: 12px; color: var(--gold); font-weight: 800; margin-top: 2px; }
-
-    /* Переключатель режимов сверху */
-    .mode-bar { display: flex; gap: 8px; padding: 10px 14px 4px; align-items: center; }
-    .mode-tabs { display: flex; flex: 1; background: var(--card); pading: 3px; border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
-    .mode-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 800; color: var(--muted); cursor: pointer; border-radius: 11px; }
-    .mode-tab.active { background: #262e3b; color: #fff; }
-    .shop-top-btn { background: linear-gradient(135deg, #fbbf24, #d97706); color: #111; font-weight: 900; font-size: 13px; padding: 8px 14px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
-
-    .wrap { padding: 10px 14px; }
-    .tab-page { display: none; }
-    .tab-page.active { display: block; animation: fadeIn 0.18s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Промо-баннеры */
-    .promo-banner { background: linear-gradient(90deg, rgba(68,40,18,0.85) 0%, rgba(24,20,18,0.95) 100%); border: 1px solid #78451e; border-radius: 15px; padding: 10px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .promo-banner.purple { background: linear-gradient(90deg, rgba(59,23,77,0.85) 0%, rgba(22,19,28,0.95) 100%); border-color: #6b21a8; }
-    .promo-title { font-size: 14px; font-weight: 900; color: #fff; }
-    .promo-sub { font-size: 12px; color: #fbbf24; margin-top: 2px; font-weight: 600; }
-
-    /* Полоска редкости и цены как в Номерке */
-    .rarity-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .segments { display: flex; gap: 4px; margin-top: 5px; }
-    .seg { width: 14px; height: 4px; border-radius: 2px; background: #2a3240; }
-    .seg.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .price-big { font-size: 21px; font-weight: 900; color: var(--green); }
-
-    /* Карточка дропа */
-    .stage-card { background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.16) 0%, var(--card) 72%); border: 1px solid var(--border); border-radius: 20px; padding: 16px 14px; text-align: center; position: relative; margin-bottom: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.55); }
-    .car-stage-icon { font-size: 62px; line-height: 1.1; margin: 4px 0 6px; filter: drop-shadow(0 10px 16px rgba(0,0,0,0.65)); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); display: inline-block; }
-    .car-stage-icon.pop { transform: scale(1.18) rotate(-3deg); }
-    .car-title { font-size: 20px; font-weight: 900; color: #fff; }
-    .car-sub { font-size: 12px; color: var(--muted); margin: 3px 0 12px; }
-
-    /* Госномер / VIN табличка */
-    .plate-wrap { background: #f8fafc; color: #0f172a; border: 3px solid #111827; outline: 2px solid #94a3b8; border-radius: 11px; display: inline-flex; align-items: stretch; overflow: hidden; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); max-width: 100%; }
-    .plate-main { padding: 8px 16px; font-size: 28px; font-weight: 900; letter-spacing: 2px; font-family: "Courier New", monospace; display: flex; align-items: center; }
-    .plate-reg { border-left: 2.5px solid #111827; padding: 6px 12px; background: #f1f5f9; display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 68px; }
-    .plate-reg-num { font-size: 18px; font-weight: 900; line-height: 1; }
-    .plate-reg-country { font-size: 11px; font-weight: 800; margin-top: 3px; }
-
-    .mult-list { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
-    .mult-list b { color: var(--green); }
-
-    .stage-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
-    .s-btn { background: var(--card2); border: 1px solid var(--border); color: #fff; padding: 9px 14px; border-radius: 13px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    .s-btn:active { transform: scale(0.95); }
-    .s-btn.gold { background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.5); color: #fbbf24; }
-    .s-btn.blue { background: rgba(59,130,246,0.14); border-color: rgba(59,130,246,0.5); color: #60a5fa; }
-    .s-btn.blue.on { background: var(--blue); color: #fff; }
-
-    /* Кастомные селекторы (вместо системных) */
-    .custom-controls { display: flex; gap: 8px; margin-bottom: 10px; }
-    .c-select { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 11px 12px; font-size: 13px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .c-select:active { background: var(--card2); }
-    .fast-multi { background: var(--card); border: 1px solid var(--border); color: var(--green); font-weight: 900; font-size: 14px; padding: 0 14px; border-radius: 14px; display: flex; align-items: center; cursor: pointer; }
-    .fast-multi.on { background: rgba(34,197,94,0.18); border-color: var(--green); }
-
-    /* Главная зелёная кнопка */
-    .main-spin-btn { width: 100%; background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%); color: #042f14; border: none; padding: 16px; border-radius: 16px; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 6px 22px rgba(34,197,94,0.35); }
-    .main-spin-btn:active { transform: scale(0.98); }
-    .cost-pill { background: rgba(0,0,0,0.28); color: #fff; padding: 3px 9px; border-radius: 10px; font-size: 13px; }
-
-    /* Сетка меню ЕЩЁ (как на скринах 2-5) */
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
-    .tile { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px 8px; text-align: center; cursor: pointer; position: relative; }
-    .tile:active { transform: scale(0.96); }
-    .tile-ico { width: 42px; height: 42px; border-radius: 12px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
-    .tile-lbl { font-size: 11px; font-weight: 800; color: #e5e7eb; }
-    .tile-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
-    .tile-card:active { transform: scale(0.98); }
-    .tile-card-title { font-size: 14px; font-weight: 900; color: #fff; }
-    .tile-card-sub { font-size: 11px; color: var(--muted); }
-
-    /* Золотой блок Магазина в Ещё */
-    .gold-shop-card { background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 55%, #ea580c 100%); color: #111; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 8px 25px rgba(245,158,11,0.25); }
-    .gold-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-    .gold-chip { background: rgba(255,255,255,0.85); color: #111; padding: 6px 11px; border-radius: 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
-
-    /* Списки (Гараж / Рынок) */
-    .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px; scrollbar-width: none; }
-    .filter-chips::-webkit-scrollbar { display: none; }
-    .f-chip { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 7px 13px; border-radius: 16px; font-size: 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
-    .f-chip.active { background: #fff; color: #000; border-color: #fff; }
-
-    .item-row { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-    .mini-plate-box { background: #f8fafc; color: #0f172a; border: 2px solid #0f172a; border-radius: 7px; padding: 4px 8px; font-family: monospace; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 3px; }
-    .act-btn { background: var(--green); color: #052e16; border: none; padding: 8px 13px; border-radius: 11px; font-weight: 900; font-size: 12px; cursor: pointer; white-space: nowrap; }
-    .act-btn.dark { background: var(--card2); color: #fff; border: 1px solid var(--border); }
-
-    /* Нижняя навигация */
-    .bottom-bar { position: fixed; bottom: 10px; left: 12px; right: 12px; background: rgba(20,24,31,0.96); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 24px; display: flex; justify-content: space-around; padding: 6px 4px; z-index: 90; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-    .b-nav { flex: 1; text-align: center; padding: 5px 0; border-radius: 16px; color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer; }
-    .b-nav.active { color: var(--green); background: rgba(34,197,94,0.12); }
-    .b-ico { font-size: 18px; display: block; margin-bottom: 2px; }
-
-    /* Модальное окно / Bottom Sheet */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px); z-index: 150; display: none; align-items: flex-end; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .sheet { background: #14181f; border-top: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-width: 520px; padding: 18px 16px 28px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.2s ease; }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .sheet-title { font-size: 18px; font-weight: 900; }
-    .sheet-close { background: var(--card2); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-weight: 900; cursor: pointer; }
-    .opt-row { background: var(--card2); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; font-size: 14px; }
-    .opt-row.selected { border-color: var(--green); background: rgba(34,197,94,0.12); }
-
-    /* Уведомления (Тосты) */
-    .toast-box { position: fixed; top: 68px; left: 50%; transform: translateX(-50%); background: #1f2937; border: 1px solid var(--gold); color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 13px; font-weight: 800; z-index: 250; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.7); text-align: center; max-width: 92vw; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Перекуп</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#090b0e;color:#f3f4f6;padding-bottom:85px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#14181f;border-bottom:1px solid #262e3b;position:sticky;top:0;z-index:20}
+.pill{background:#1c222b;border:1px solid #262e3b;padding:6px 12px;border-radius:16px;font-size:13px;font-weight:800;display:inline-block;margin-right:6px}
+.luck{color:#22c55e;border-color:#22c55e}
+.wrap{padding:12px 14px}
+.page{display:none}.page.on{display:block}
+.ban{background:linear-gradient(90deg,#3b2314,#181412);border:1px solid #78451e;border-radius:14px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.card{background:radial-gradient(circle at top,#192b22,#14181f 70%);border:1px solid #262e3b;border-radius:18px;padding:15px;text-align:center;margin-bottom:10px}
+.plate{background:#f8fafc;color:#0f172a;border:3px solid #111;border-radius:10px;display:inline-flex;align-items:center;margin:10px 0;overflow:hidden}
+.p-code{padding:6px 14px;font-size:24px;font-weight:900;font-family:monospace}
+.p-reg{border-left:2px solid #111;padding:4px 10px;background:#e2e8f0;font-weight:900;font-size:14px}
+.row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.btn{background:#1c222b;border:1px solid #2e3846;color:#fff;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:800;flex:1;text-align:center}
+.btn:active,.spin:active{transform:scale(0.96)}
+.spin{width:100%;background:#22c55e;color:#042f14;border:none;padding:15px;border-radius:15px;font-size:17px;font-weight:900;margin-top:10px}
+.nav{position:fixed;bottom:10px;left:12px;right:12px;background:#14181f;border:1px solid #262e3b;border-radius:20px;display:flex;padding:6px}
+.n-it{flex:1;text-align:center;font-size:11px;font-weight:800;color:#9ca3af;padding:6px 0;border-radius:14px}
+.n-it.on{color:#22c55e;background:rgba(34,197,94,0.12)}
+.item{background:#14181f;border:1px solid #262e3b;border-radius:14px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+#toast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#000;padding:8px 16px;border-radius:12px;font-weight:900;font-size:13px;display:none;z-index:99}
+</style>
 </head>
 <body>
+<div id="toast"></div>
+<div class="top">
+  <div>
+    <span class="pill" id="u-lvl">Ур. 1</span>
+    <span class="pill luck" onclick="addLuck()">🍀 ×<span id="u-luck">2</span></span>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:16px;font-weight:900"><span id="u-rub">150 000</span> ₽</div>
+    <div style="font-size:12px;color:#f59e0b;font-weight:800">⭐ <span id="u-stars">100</span> • 🎫 <span id="u-tix">40</span></div>
+  </div>
+</div>
 
-  <div class="toast-box" id="toast"></div>
-
-  <!-- Верхняя панель -->
-  <div class="topbar">
-    <div class="top-left">
-      <div class="pill" onclick="openProfileModal()">Ур. <span id="ui-lvl">1</span></div>
-      <div class="pill pill-luck" onclick="openShopModal('luck')">🍀 <span id="ui-luck">1</span></div>
+<div class="wrap">
+  <div id="p-play" class="page on">
+    <div class="ban" onclick="freeBoost()">
+      <div><b style="font-size:14px">🍀 Бонус: Удача ×10 + 25 🎫</b><div style="font-size:12px;color:#fbbf24">Нажми, чтобы забрать бесплатно</div></div>
+      <b>➔</b>
     </div>
-    <div class="bal-box" onclick="openShopModal('stars')">
-      <div class="bal-label">Баланс</div>
-      <div class="bal-rub"><span id="ui-rub">50 000</span> ₽</div>
-      <div class="bal-sub">⭐ <span id="ui-stars">50</span> • 🎫 <span id="ui-tickets">35</span></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-weight:900;margin-bottom:6px">
+        <span id="c-rar" style="color:#22c55e">Необычный</span>
+        <span id="c-prc" style="color:#22c55e;font-size:19px">240 000 ₽</span>
+      </div>
+      <div id="c-ico" style="font-size:54px">🚙</div>
+      <div id="c-nam" style="font-size:19px;font-weight:900">Toyota Mark II</div>
+      <div class="plate">
+        <div class="p-code" id="c-vin">А 777 МР</div>
+        <div class="p-reg" id="c-reg">777 🇷🇺</div>
+      </div>
+      <div id="c-inf" style="font-size:12px;color:#9ca3af;margin-bottom:8px">Регион и серия дают бонус к цене</div>
+      <div class="row">
+        <button class="btn" style="color:#fbbf24" onclick="glove()">🧤 Бардачок</button>
+        <button class="btn" id="b-frz" style="color:#60a5fa" onclick="freeze()">❄️ Заморозка (10⭐)</button>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="toGar()">📥 В гараж</button>
+        <button class="btn" onclick="sellNow()">💸 Продать</button>
+      </div>
     </div>
+    <div class="row">
+      <button class="btn" id="b-cnt" onclick="nextCountry()">🇷🇺 Россия (×1)</button>
+      <button class="btn" id="b-bet" onclick="nextBet()">Ставка ×1</button>
+    </div>
+    <button class="spin" onclick="spin()">Вскрыть контейнер (🎫 <span id="u-cost">1</span>)</button>
   </div>
 
-  <!-- Переключатель Номера / Машины / Магазин -->
-  <div class="mode-bar">
-    <div class="mode-tabs">
-      <div class="mode-tab active" id="mt-cars" onclick="setPlayMode('cars')">Тачки и VIN</div>
-      <div class="mode-tab" id="mt-autopark" onclick="openAutoparkModal()">Автопарк</div>
-    </div>
-    <div class="shop-top-btn" onclick="openShopModal('all')">⭐ Магазин</div>
+  <div id="p-gar" class="page">
+    <h3 style="margin-bottom:10px">Мой Гараж (<span id="g-cnt">0</span>)</h3>
+    <div id="g-list"></div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="craft()">🧪 Крафт 5 ➔ 1 (Эксклюзив)</button>
   </div>
 
-  <div class="wrap">
+  <div id="p-mkt" class="page">
+    <h3 style="margin-bottom:10px">Рынок и Аукцион</h3>
+    <div id="m-list"></div>
+  </div>
 
-    <!-- ВКЛАДКА 1: ИГРАТЬ (ОХОТА) -->
-    <div id="page-play" class="tab-page active">
-      <div class="promo-banner" onclick="claimFreeLuckTask()">
-        <div>
-          <div class="promo-title">🍀 Удача ×10 БЕСПЛАТНО</div>
-          <div class="promo-sub">🎁 Задание • Удача ×10 + 25 отмычек</div>
-        </div>
-        <div style="font-weight:900;">➔</div>
-      </div>
+  <div id="p-more" class="page">
+    <h3 style="margin-bottom:10px">Мини-игры и Магазин</h3>
+    <div class="item" onclick="upgr()"><span>⚡ Апгрейдер тачки ×2 (Шанс 55%)</span><b style="color:#22c55e">Рискнуть</b></div>
+    <div class="item" onclick="duel()"><span>🎲 Дуэль в кубики (Ставка 100 000 ₽)</span><b style="color:#fbbf24">Бросить</b></div>
+    <div class="item" onclick="dealer()"><span>🕵️‍♂️ Сдать тачку Скупщику (+40% цены)</span><b style="color:#22c55e">Сдать</b></div>
+    <div class="item" onclick="addStars()"><span>💎 Начислить +200 ⭐ (Тест)</span><b style="color:#60a5fa">+200 ⭐</b></div>
+  </div>
+</div>
 
-      <div class="promo-banner purple" onclick="openShopModal('pack')">
-        <div>
-          <div class="promo-title">💥 Легендарный набор <s style="color:var(--muted);font-size:12px;">150</s> <span style="color:#f87171;">45 ⭐</span></div>
-          <div class="promo-sub">📦 3 Дубайских контейнера + 100 🎫</div>
-        </div>
-        <div style="font-weight:900;">➔</div>
-      </div>
+<div class="nav">
+  <div class="n-it on" onclick="tab('play',this)">▶️ Играть</div>
+  <div class="n-it" onclick="tab('gar',this)">🏠 Гараж</div>
+  <div class="n-it" onclick="tab('mkt',this)">🏪 Рынок</div>
+  <div class="n-it" onclick="tab('more',this)">••• Ещё</div>
+</div>
 
-      <!-- Полоска редкости и цены -->
-      <div class="rarity-bar">
-        <div>
-          <div id="ui-rarity-name" style="font-size:13px; font-weight:900; color:var(--green);">Необычный</div>
-          <div class="segments" id="ui-segments"></div>
-        </div>
-        <div class="price-big" id="ui-car-price">185 000 ₽</div>
-      </div>
+<script>
+const S={rub:150000,stars:100,tix:40,lvl:1,luck:2,cIdx:0,bet:1,frz:false,glv:false,gar:[],mkt:[
+  {n:"G63 AMG",i:"🚓",v:"А 777 МР",p:25000000},
+  {n:"Bugatti Chiron",i:"🚀",v:"DXB 1",p:85000000}
+]};
+const CN=[{n:"🇷🇺 Россия (×1)",r:"777 🇷🇺",m:1},{n:"🇦🇪 Дубай (×3)",r:"DXB 🇦🇪",m:3},{n:"🇯🇵 Токио (×2)",r:"TKY 🇯🇵",m:2}];
+const CR=[{n:"ВАЗ-2107",i:"🚗",b:60000},{n:"Mark II",i:"🚙",b:250000},{n:"BMW M5",i:"🏎️",b:900000},{n:"G63 AMG",i:"🚓",b:4500000},{n:"Bugatti",i:"🚀",b:25000000}];
+const LT=["А","В","Е","К","М","О","Р","Х"];
+let cur=null;
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+function msg(t){const e=document.getElementById('toast');e.innerText=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
+function ui(){
+  document.getElementById('u-rub').innerText=fmt(S.rub);
+  document.getElementById('u-stars').innerText=S.stars;
+  document.getElementById('u-tix').innerText=S.tix;
+  document.getElementById('u-luck').innerText=S.luck;
+  document.getElementById('u-cost').innerText=S.bet;
+  document.getElementById('b-cnt').innerText=CN[S.cIdx].n;
+  document.getElementById('b-bet').innerText="Ставка ×"+S.bet;
+}
+function spin(){
+  if(S.tix<S.bet)return msg("Не хватает 🎫!");
+  if(S.frz&&S.stars>=10)S.stars-=10; else S.frz=false;
+  S.tix-=S.bet; S.glv=false;
+  const c=CR[Math.floor(Math.random()*CR.length)];
+  const cn=CN[S.cIdx];
+  const d=Math.random()<0.25?["777","001","888"][Math.floor(Math.random()*3)]:String(100+Math.floor(Math.random()*899));
+  const vin=(S.frz&&cur)?cur.v:`${LT[Math.floor(Math.random()*8)]} ${d} АМ`;
+  const m=(["777","001","888"].includes(d)?5:1)*cn.m*S.bet;
+  const p=c.b*m;
+  cur={n:c.n,i:c.i,v:vin,r:cn.r,p:p};
+  document.getElementById('c-ico').innerText=cur.i;
+  document.getElementById('c-nam').innerText=cur.n;
+  document.getElementById('c-vin').innerText=cur.v;
+  document.getElementById('c-reg').innerText=cur.r;
+  document.getElementById('c-prc').innerText=fmt(cur.p)+" ₽";
+  document.getElementById('c-rar').innerText=p>5000000?"Легендарный":p>500000?"Эпический":"Необычный";
+  ui();
+}
+function glove(){if(S.glv)return msg("Уже проверено!");S.glv=true;S.rub+=100000;msg("🧤 Найдено +100 000 ₽!");ui()}
+function freeze(){S.frz=!S.frz;msg(S.frz?"❄️ VIN заморожен":"Заморозка снята")}
+function toGar(){S.gar.unshift({...cur});msg("📥 В гараже!");spin()}
+function sellNow(){S.rub+=cur.p;msg("💸 +"+fmt(cur.p)+" ₽");spin()}
+function nextCountry(){S.cIdx=(S.cIdx+1)%CN.length;ui();msg(CN[S.cIdx].n)}
+function nextBet(){S.bet=S.bet===1?5:S.bet===5?10:1;ui()}
+function freeBoost(){S.luck+=10;S.tix+=25;msg("🍀 +10 Удачи и +25 🎫!");ui()}
+function addLuck(){if(S.stars>=10){S.stars-=10;S.luck+=2;ui();msg("🍀 Удача +2")}}
+function addStars(){S.stars+=200;ui();msg("💎 +200 ⭐")}
+function tab(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  document.querySelectorAll('.n-it').forEach(n=>n.classList.remove('on'));
+  el.classList.add('on');
+  if(id==='gar'){
+    document.getElementById('g-cnt').innerText=S.gar.length;
+    document.getElementById('g-list').innerHTML=S.gar.map((x,k)=>`<div class="item"><span>${x.i} <b>${x.n}</b> (${x.v})<br><small style="color:#22c55e">${fmt(x.p)} ₽</small></span><button class="btn" style="flex:0" onclick="S.rub+=S.gar.splice(${k},1)[0].p;tab('gar',document.querySelectorAll('.n-it')[1]);ui()">Продать</button></div>`).join('')||'Пусто';
+  }
+  if(id==='mkt'){
+    document.getElementById('m-list').innerHTML=S.mkt.map((x,k)=>`<div class="item"><span>${x.i} <b>${x.n}</b> [${x.v}]<br><small style="color:#fbbf24">${fmt(x.p)} ₽</small></span><button class="btn" style="flex:0" onclick="if(S.rub>=${x.p}){S.rub-=${x.p};S.gar.push(S.mkt.splice(${k},1)[0]);msg('Куплено!');tab('mkt',document.querySelectorAll('.n-it')[2]);ui()}else msg('Мало ₽')">Купить</button></div>`).join('');
+  }
+}
+function craft(){if(S.gar.length<5)return msg("Нужно 5 машин!");const s=S.gar.splice(0,5).reduce((a,b)=>a+b.p,0);S.gar.unshift({n:"Эксклюзив Brabus",i:"👑",v:"А 001 АА",p:s*2});tab('gar',document.querySelectorAll('.n-it')[1]);msg("🔥 Скрафчено!")}
+function upgr(){if(!S.gar.length)return msg("Гараж пуст!");if(Math.random()<0.55){S.gar[0].p*=2;msg("🚀 Успех ×2!")}else{S.gar.shift();msg("💥 Сгорела!")}ui()}
+function duel(){if(S.rub<100000)return msg("Мало ₽!");S.rub+=Math.random()<0.5?100000:-100000;ui();msg("🎲 Дуэль сыграна!")}
+function dealer(){if(!S.gar.length)return msg("Гараж пуст!");const c=S.gar.shift();S.rub+=c.p*1.4;ui();msg("🕵️‍♂️ Продано +40%!")}
+spin();
+</script>
+</body>
+</html>
 
-      <!-- Главная сцена контейнера -->
-      <div class="stage-card" id="stage-card">
-        <div class="car-stage-icon" id="ui-car-emoji">🚙</div>
-        <div class="car-title" id="ui-car-name">Toyota Mark II</div>
-        <div class="car-sub" id="ui-car-cond">Состояние: Гаражная находка</div>
-
-        <div class="plate-wrap">
-          <div class="plate-main" id="ui-plate-code">О 256 НК</div>
-          <div class="plate-reg">
-            <div class="plate-reg-num" id="ui-plate-reg">977</div>
-            <div class="plate-reg-country" id="ui-plate-flag">🇷🇺 RUS</div>
-          </div>
-        </div>
-
-        <div class="mult-list" id="ui-mult-list">
-          🍀 Удача: лучший из 2 контейнеров<br>
-          Столичный регион <b>×1.4</b><br>
-          256 — два в восьмой <b>×4</b>
-        </div>
-
-        <div class="stage-btns">
-          <button class="s-btn gold" id="btn-glove" onclick="searchGlovebox()">🧤 Бардачок</button>
-          <button class="s-btn blue" id="btn-freeze" onclick="toggleFreezeVin()">❄️ Заморозить VIN (10 ⭐)</button>
-        </div>
-
-        <div class="stage-btns" style="margin-top:8px;">
-          <button class="s-btn" onclick="saveCurrentCar()">📥 В гараж</button>
-          <button class="s-btn" onclick="quickSellCurrent()">💸 Продать за <span id="ui-sell-btn-val">185 000 ₽</span></button>
-        </div>
-      </div>
-
-      <!-- Кастомный выбор страны и ставки (открывает Bottom Sheet) -->
-      <div class="custom-controls">
-        <div class="c-select" onclick="openCountrySheet()">
-          <span id="ui-country-label">🇷🇺 Россия • Обычный</span>
-          <span>▾</span>
-        </div>
-        <div class="c-select" style="max-width:130px;" onclick="openBetSheet()">
-          <span id="ui-bet-label">Ставка ×1</span>
-          <span>▾</span>
-        </div>
-        <div class="fast-multi" id="btn-fast5" onclick="toggleFast5()">5×</div>
-      </div>
-
-      <button class="main-spin-btn" onclick="doSpin()">
-        <span id="ui-spin-text">Вскрыть контейнер</span>
-        <span class="cost-pill">🎫 <span id="ui-spin-cost">1</span></span>
-      </button>
-    </div>
-
-    <!-- ВКЛАДКА 2: ГАРАЖ -->
-    <div id="page-garage" class="tab-page">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="font-size:20px; font-weight:900;">Гараж (<span id="g-count">0</span>/60)</h2>
-        <div style="font-size:15px; font-weight:900; color:var(--green);" id="g-total-sum">0 ₽</div>
-      </div>
-
-      <div class="filter-chips">
-        <div class="f-chip active" onclick="filterGarage('ALL', this)">Все</div>
-        <div class="f-chip" onclick="filterGarage('RU', this)">🇷🇺 Россия</div>
-        <div class="f-chip" onclick="filterGarage('AE', this)">🇦🇪 ОАЭ</div>
-        <div class="f-chip" onclick="filterGarage('JP', this)">🇯🇵 Япония</div>
-        <div class="f-chip" onclick="filterGarage('US', this)">🇺🇸 США</div>
-        <div class="f-chip" onclick="sortGaragePrice()">Цена ↓↑</div>
-      </div>
-
-      <div id="garage-items"></div>
-
-      <button class="s-btn" style="width:100%; justify-content:center; padding:14px; margin-top:10px;" onclick="exchangeFiveToOne()">🧪 Обменник 5 ➔ 1 (Крафт редкой тачки)</button>
-      <button class="s-btn" style="width:100%; justify-content:center; padding:14px; margin-top:8px; color:#f87171;" onclick="sellAllGarage()">💸 Продать все тачки перекупам</button>
-    </div>
-
-    <!-- ВКЛАДКА 3: РЫНОК (АУКЦИОН) -->
-    <div id="page-market" class="tab-page">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="font-size:20px; font-weight:900;">Рынок и Аукцион</h2>
-        <button class="act-btn" onclick="openSellOnMarketModal()">+ Выставить лот</button>
-      </div>
-
-      <div class="filter-chips">
-        <div class="f-chip active" onclick="renderMarket('all', this)">🔥 Все лоты</div>
-        <div class="f-chip" onclick="renderMarket('stars', this)">⭐ За звёзды</div>
-        <div class="f-chip" onclick="renderMarket('my', this)">📦 Мои лоты</div>
-      </div>
-
-      <div id="market-list"></div>
-    </div>
-
-    <!-- ВКЛАДКА 4: ДРУЗЬЯ -->
-    <div id="page-friends" class="tab-page">
-      <div class="stage-card" style="padding:20px 14px;">
-        <div style="font-size:44px; margin-bottom:6px;">👥</div>
-        <div class="car-title">Зови друзей — получай с их удачи</div>
-        <div class="car-sub" style="font-size:13px;">Друг сразу получит <b>25 бесплатных попыток</b>. А ты — награды, пока он играет!</div>
-        <button class="main-spin-btn" style="margin-top:10px;" onclick="inviteFriend()">Пригласить друга (+25 🎫)</button>
-      </div>
-
-      <div class="item-row"><span>🎫 Друг сделал 30 бросков</span><b style="color:var(--green);">+50 попыток 🔥</b></div>
-      <div class="item-row"><span>💸 Друг выбил редкую тачку</span><b style="color:var(--green);">5% её цены</b></div>
-      <div class="item-row"><span>⭐ Друг купил что-то за звёзды</span><b style="color:var(--gold);">5% на звёздный баланс</b></div>
-      <div class=
